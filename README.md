@@ -2,13 +2,46 @@
 
 A RESTful service used for storing and finding entries in an openly shared journal.
 
-## Configure
+## Install
+
+Clone this project. Get your python and pip environment ready, and then just go to the project directory
+and install flask and boto using:
+
+```
+pip install requirements.pip
+```
+
+## Configure Medit Service
 
 By default, the meditsvc.ini file is used. New configurations are applied by setting the environment variable:
 
 ```
 export MEDIT_INI = pathto/my.ini
 
+```
+
+## Configure AWS Credentials
+
+The standard AWS config is used so if you haven't already done so, run the AWS client config or just set your environment variables or store your config as a text file:
+
+```
+cat ~/.aws/credentials
+[default]
+aws_access_key_id = <myid>
+aws_secret_access_key = <mykey>
+```
+
+Or ...
+
+```
+aws configure
+```
+
+Or ...
+
+```
+export AWS_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY
 ```
 
 ## Run

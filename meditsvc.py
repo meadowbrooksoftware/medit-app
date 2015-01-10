@@ -120,7 +120,8 @@ def enhance(post_uuid, medit_post):
 
 
 def write_metadata(medit_post):
-    return Item(Table(app.config['DYNAMO_MEDIT_TABLE']), data=medit_post).save()
+    tbl = Table(app.config['DYNAMO_MEDIT_TABLE'])
+    return Item(tbl, data=medit_post).save()
 
 
 def write_data(medit_post):
