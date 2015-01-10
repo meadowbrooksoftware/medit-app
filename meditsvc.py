@@ -1,6 +1,7 @@
 __author__ = 'luke'
 
 from flask import Flask, request
+from flask.ext.cors import CORS, cross_origin
 import json
 import uuid
 from boto.s3.connection import S3Connection
@@ -17,6 +18,8 @@ INI_FILE_ENV_VAR = 'MEDIT_INI_PATH'
 DFLT_INI_FILE = 'meditsvc.ini'
 
 app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 # load config
 
