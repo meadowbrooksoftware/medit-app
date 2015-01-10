@@ -1,4 +1,4 @@
-# medit-svc
+# meditsvc
 
 A RESTful service used for storing and finding entries in an openly shared journal.
 
@@ -8,7 +8,7 @@ Clone this project. Get your python and pip environment ready, and then just go 
 and install flask and boto using:
 
 ```
-pip install requirements.pip
+pip install -r requirements.pip
 ```
 
 ## Configure Medit Service
@@ -47,14 +47,16 @@ export AWS_SECRET_ACCESS_KEY
 ## Run
 
 This is a flask application. It is started via the main method.
+
 ```
 python meditsvc.py
+```
 
-# Data Anatomy
+## Data Anatomy
 
 A post looks like this:
 
-```javascript
+```json
 {
 "by": "luke",
 "type": "pranhayana",
