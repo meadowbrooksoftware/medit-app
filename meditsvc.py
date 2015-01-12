@@ -121,12 +121,11 @@ def validate(medit_post):
 def enhance(post_uuid, medit_post):
     now = datetime.utcnow()
     at = calendar.timegm(time.gmtime())
-    medit_post['svcver'] = app.config['VERSION']
     medit_post['at'] = at
     medit_post['date'] = now.strftime(app.config['DATE_FORMAT'])
     medit_post['id'] = str(post_uuid)
     medit_post['ctxt'] = str(app.config['CTXT'])
-
+    medit_post['svcver'] = app.config['VERSION']
 
 def write_metadata(medit_post):
     tbl = Table(app.config['DYNAMO_MEDIT_TABLE'])
