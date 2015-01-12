@@ -64,7 +64,12 @@ def medits():
     begin = int(request.args.get('beginat', '0'))
     end = int(request.args.get('endat', '0'))
     detail = request.args.get('detail', 'false').lower() == 'true'
-    return "%s%s%s" % ("[", ",".join(query_at_range(begin, end, detail)), "]")
+    max = int(request.args.get('max', '-1'))
+    skip = int(request.args.get('skip', '0'))
+    maxlen = int(request.args.get('maxlen', '-1'))
+    rslt = query_at_range(begin, end, skip, detail)
+    data = trim(rslt, max, maxlen)
+    return "%s%s%s" % ("[", ",".join(data), "]")
 
 
 def get(post_uuid):
@@ -116,6 +121,7 @@ def validate(medit_post):
 def enhance(post_uuid, medit_post):
     now = datetime.utcnow()
     at = calendar.timegm(time.gmtime())
+    medit_post['svcver'] = app.config['VERSION']
     medit_post['at'] = at
     medit_post['date'] = now.strftime(app.config['DATE_FORMAT'])
     medit_post['id'] = str(post_uuid)
@@ -140,7 +146,8 @@ def terse(medit_post):
     return "{\"id\": \"%s\",\"at\": %d}" % (medit_post['id'], medit_post['at'])
 
 
-def query_at_range(bgn_epoch, end_epoch, detail):
+def query_at_range(bgn_epoch, end_epoch, skip, detail):
+    count = 0
     data = [] # of json strings
     if bgn_epoch is not None and end_epoch is not None:
         app.logger.info("query by epoch: %d %d" % (bgn_epoch, end_epoch))
@@ -148,15 +155,39 @@ def query_at_range(bgn_epoch, end_epoch, detail):
         rslts = dynamo_post.query_2(
             index='ctxt-at-index', ctxt__eq=str(app.config['CTXT']), at__between=[int(bgn_epoch), int(end_epoch)])
         for rslt in rslts:
-            app.logger.info("found: %s %s" % (rslt['id'], rslt['at']))
-            if detail:
-                app.logger.info("getting detail for %s" % rslt['id'])
-                data.append(get_from_s3(rslt['id']))
-            else:
-                app.logger.info("getting metadata for %s" % rslt['id'])
-                data.append("{\"id\": \"%s\", \"at\": %d}" % (rslt['id'], rslt['at']))
+            count += 1
+            if skip < 0 or count > skip:
+                app.logger.info("found: %s %s" % (rslt['id'], rslt['at']))
+                if detail:
+                    app.logger.info("getting detail for %s" % rslt['id'])
+                    data.append(get_from_s3(rslt['id']))
+                else:
+                    app.logger.info("getting metadata for %s" % rslt['id'])
+                    data.append("{\"id\": \"%s\", \"at\": %d}" % (rslt['id'], rslt['at']))
     return data
 
+
+def trim(data, max, maxlen):
+    if max >= 0:
+        data = data[:max]
+    if maxlen < 0:
+        return data
+    else:
+        trimrows = []
+        notrim = set(['id','type','at','date'])
+        for rowstr in data:
+            row = json.loads(rowstr)
+            app.logger.info("trimming row:%s" % rowstr)
+            for attr in row:
+                app.logger.info("trim %s in %s?%s" % (attr, notrim, attr in notrim))
+                if (attr not in notrim) and (isinstance(row[attr], str) or isinstance(row[attr], unicode)):
+                    app.logger.info("trimming attr:%s" % attr)
+                    app.logger.info("trimming val:%s to %d" % (row[attr], maxlen))
+                    row[attr] = row[attr][:maxlen]
+                else:
+                    app.logger.info("ignoring attr:%s" % attr)
+            trimrows.append(json.dumps(row))
+    return trimrows
 
 if __name__ == '__main__':
     app.run()

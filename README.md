@@ -137,6 +137,26 @@ And the service will respond with an array of complete posts:
 [{"by": "luke", "type": "pranhayana", "head": "Great Day", "body": "I had yet another good session!", "at": 1420895424, "date": "2015-01-10T13:10:24", "id": "7079c392-8f40-40cc-b87b-89480d6b4a65"}]
 ```
 
+## Limiting Data
+
+You can restrict your result count using max.
+
+```
+curl http://<host>:<port>/medits?beginat=utcepoch&endat=utcepoch&detail=true&max=100
+```
+
+You can simulate pagination by combining max with skip.
+
+```
+curl http://<host>:<port>/medits?beginat=utcepoch&endat=utcepoch&detail=true&max=100&skip=100
+```
+
+You can truncate the size of field data using maxlen. Some fields are immune (id, type, at, date). This is useful for web previews.
+
+```
+curl http://<host>:<port>/medits?beginat=utcepoch&endat=utcepoch&detail=true&maxlen=30
+```
+
 ## Post 
 
 The restful service takes new messages via the following endpoint (where host and port match your environment).
