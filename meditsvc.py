@@ -36,7 +36,7 @@ if app.config['CREATE_LOG']:
         os.makedirs(os.path.dirname(logfile))
 app.logger.setLevel(logging.DEBUG)
 handler = logging.handlers.RotatingFileHandler(
-    logfile, maxBytes=20, backupCount=5)
+    logfile, maxBytes=31457280, backupCount=0)
 app.logger.addHandler(handler)
 
 # define endpoints
@@ -56,7 +56,8 @@ def medit(post_uuid):
         if probs:
             return "{\"probs\": [%s]}" % ', '.join('"{0}"'.format(p) for p in probs)
         else:
-            return post(uuid.uuid4(), request.json)
+            app.logger.info("ip:%s" % request.remote_addr)
+            return post(uuid.uuid4(), request.json, request.remote_addr)
 
 
 @app.route('/medits', methods=['GET'])
@@ -88,9 +89,9 @@ def get_from_s3(post_uuid):
     return k.get_contents_as_string()
 
 
-def post(post_uuid, medit_post):
-    app.logger.info('posting:%s|%s|%s' % (app.config['BUCKET_NAME'], app.config['S3_BASE_PATH'], post_uuid))
-    enhance(post_uuid, medit_post)
+def post(post_uuid, medit_post, ip):
+    app.logger.info('posting:%s|%s|%s|ip' % (app.config['BUCKET_NAME'], app.config['S3_BASE_PATH'], post_uuid, ip))
+    enhance(post_uuid, medit_post, ip)
     rslt = write_metadata(medit_post)
     if rslt:
         app.logger.info("stored metadata %s to %s" % (post_uuid, app.config['DYNAMO_MEDIT_TABLE']))
@@ -118,12 +119,13 @@ def validate(medit_post):
     return probs
 
 
-def enhance(post_uuid, medit_post):
+def enhance(post_uuid, medit_post, ip):
     now = datetime.utcnow()
     at = calendar.timegm(time.gmtime())
     medit_post['at'] = at
     medit_post['date'] = now.strftime(app.config['DATE_FORMAT'])
     medit_post['id'] = str(post_uuid)
+    medit_post['ip'] = ip
     medit_post['ctxt'] = str(app.config['CTXT'])
     medit_post['svcver'] = app.config['VERSION']
 
