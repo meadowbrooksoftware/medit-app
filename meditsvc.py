@@ -90,7 +90,7 @@ def get_from_s3(post_uuid):
 
 
 def post(post_uuid, medit_post, ip):
-    app.logger.info('posting:%s|%s|%s|ip' % (app.config['BUCKET_NAME'], app.config['S3_BASE_PATH'], post_uuid, ip))
+    app.logger.info('posting:%s|%s|%s|%s' % (app.config['BUCKET_NAME'], app.config['S3_BASE_PATH'], post_uuid, ip))
     enhance(post_uuid, medit_post, ip)
     rslt = write_metadata(medit_post)
     if rslt:
